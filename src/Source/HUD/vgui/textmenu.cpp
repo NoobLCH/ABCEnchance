@@ -20,6 +20,7 @@
 extern vgui::HScheme GetViewPortBaseScheme();
 CTextMenu::CTextMenu()
 	: BaseClass(nullptr, VIEWPORT_TEXTMENU_NAME) {
+	SetProportional(true);
 	SetKeyBoardInputEnabled(false);
 	SetMouseInputEnabled(false);
 	SetScheme(GetViewPortBaseScheme());
@@ -45,6 +46,10 @@ void CTextMenu::ApplySchemeSettings(vgui::IScheme* pScheme) {
 	SetBgColor(GetSchemeColor("TextMenu.BgColor", GetSchemeColor("Panel.BgColor", pScheme), pScheme));
 	m_pMenu->SetFgColor(GetSchemeColor("TextMenu.TextColor", GetSchemeColor("Label.FgColor", pScheme), pScheme));
 	m_pMenu->SetFont(pScheme->GetFont(pScheme->GetResourceString("TextMenu.Font"), IsProportional()));
+}
+void CTextMenu::ApplySettings(KeyValues* inResourceData) {
+	BaseClass::ApplySettings(inResourceData);
+	m_flFadeAnimateTime = inResourceData->GetFloat("fade_time");
 }
 void CTextMenu::ShowPanel(bool state) {
 	if (state == IsVisible())
@@ -72,10 +77,16 @@ void CTextMenu::SetContent(const char* szMenu){
 
 
 void CTextMenu::StartFade(bool state){
-	vgui::GetAnimationController()->StartAnimationSequence(GetParent(), state ? "TextMenuIn" : "TextMenuOut");
+	SetAlpha(state ? 0 : 255);
+	ShowPanel(true);
+	vgui::GetAnimationController()->RunAnimationCommand(this, "alpha", state ? 255 : 0, 0.0f, m_flFadeAnimateTime, vgui::AnimationController::INTERPOLATOR_LINEAR);
 }
 
 void CTextMenu::OnThink(){
+	if (GetAlpha() <= 0) {
+		ShowPanel(false);
+		return;
+	}
 	if (m_flShutoffTime >= 0 && gEngfuncs.GetClientTime() >= m_flShutoffTime) {
 		StartFade(false);
 		m_flShutoffTime = -1;
@@ -105,6 +116,7 @@ bool CTextMenu::MsgShowMenu(const char* pszName, int iSize, void* pbuf){
 	if (m_bitsValidSlots){
 		m_szMenuString += READ_STRING();
 		if (!iNeedMore) {
+
 			//Remove all \n from begin and end
 			//someone will send a bunch of \n\n\n\n\n\n\n\n\n\n\n\n\n\n in the beginning, wtf?????
 			const static auto searchFunc = [](char ch) {return ch != '\n';};
