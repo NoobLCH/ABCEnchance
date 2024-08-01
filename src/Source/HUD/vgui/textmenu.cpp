@@ -45,6 +45,7 @@ void CTextMenu::ApplySchemeSettings(vgui::IScheme* pScheme) {
 	BaseClass::ApplySchemeSettings(pScheme);
 	SetBgColor(GetSchemeColor("TextMenu.BgColor", GetSchemeColor("Panel.BgColor", pScheme), pScheme));
 	m_pMenu->SetFgColor(GetSchemeColor("TextMenu.TextColor", GetSchemeColor("Label.FgColor", pScheme), pScheme));
+	m_pMenu->SetFont(pScheme->GetFont(pScheme->GetResourceString("TextMenu.Font"), IsProportional()));
 }
 void CTextMenu::ApplySettings(KeyValues* inResourceData) {
 	BaseClass::ApplySettings(inResourceData);
@@ -69,9 +70,9 @@ void CTextMenu::SetContent(const char* szMenu){
 	m_pMenu->SetText(szMenu);
 	int w, h;
 	m_pMenu->GetTextImage()->GetContentSize(w, h);
-	SetWide(w * 1.1f);
-	SetTall(h * 1.1f);
-	m_pMenu->SetPos(GetWide() * 0.05, GetTall() * 0.05);
+	SetSize(w * 1.1f, h * 1.1f);
+	m_pMenu->SetSize(w * 1.1f, h * 1.1f);
+	m_pMenu->SetPos((GetWide() - w) / 2, (GetTall() - h) / 2);
 }
 
 
